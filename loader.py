@@ -1,7 +1,8 @@
 import os
 import re
 import codecs
-
+import copy
+import random
 from data_utils import create_dico, create_mapping, zero_digits
 from data_utils import iob2, iob_iobes, get_seg_features
 
@@ -9,6 +10,7 @@ def data_augmentation(sentences):
     """
     数据增强
     通过中文标点，新增一些数据；
+    随机查找一个字符，若是非实体，则删除掉。
     :param sentences: [[['查', 'O'], ['尔', 'O'], ['斯', 'O'], ['·', 'O'], ['阿', 'O'], ['兰', 'O'], ['基', 'O'], ['斯', 'O'], ['（', 'O'], ['C', 'O'], ['H', 'O'], ['A', 'O'], ['R', 'O'], ['L', 'O'], ['E', 'O'], ['S', 'O'], ['$', 'O'], ['A', 'O'], ['R', 'O'], ['Á', 'O'], ['N', 'O'], ['G', 'O'], ['U', 'O'], ['I', 'O'], ['Z', 'O'], ['）', 'O'], ['，', 'O'], ['1', 'B-DATE'], ['9', 'I-DATE'], ['8', 'I-DATE'], ['9', 'I-DATE'], ['年', 'I-DATE'], ['4', 'I-DATE'], ['月', 'I-DATE'], ['1', 'I-DATE'], ['7', 'I-DATE'], ['日', 'I-DATE'], ['出', 'O'], ['生', 'O'], ['于', 'O'], ['智', 'O'], ['利', 'O'], ['圣', 'O'], ['地', 'O'], ['亚', 'O'], ['哥', 'O'], ['，', 'O'], ['智', 'O'], ['利', 'O'], ['职', 'O'], ['业', 'O'], ['足', 'O'], ['球', 'O'], ['运', 'O'], ['动', 'O'], ['员', 'O'], ['，', 'O'], ['司', 'O'], ['职', 'O'], ['中', 'O'], ['场', 'O'], ['，', 'O'], ['效', 'O'], ['力', 'O'], ['于', 'O'], ['德', 'O'], ['国', 'O'], ['足', 'O'], ['球', 'O'], ['甲', 'O'], ['级', 'O'], ['联', 'O'], ['赛', 'O'], ['勒', 'O'], ['沃', 'O'], ['库', 'O'], ['森', 'O'], ['足', 'O'], ['球', 'O'], ['俱', 'O'], ['乐', 'O'], ['部', 'O']]]
     :return:
     """
@@ -20,11 +22,20 @@ def data_augmentation(sentences):
         split_indexs = [_index for _index, ws in enumerate(sentence[:-1]) if ws[0] in SPLIT_CHARS and ws[1] == 'O']
         if not split_indexs:
             continue
-        augment_datas.append(sentence[:split_indexs[0]+1])
+        sentence = copy.deepcopy(sentence)
+        data =[]
+        data.append(sentence[:split_indexs[0]+1])
         if len(split_indexs) > 1:
-            augment_datas.extend([sentence[i+1: split_indexs[_index+1]+1] for _index, i in enumerate(split_indexs[:-1])])
-        augment_datas.append(sentence[split_indexs[-1]+1:])
-
+            data.extend([sentence[i+1: split_indexs[_index+1]+1] for _index, i in enumerate(split_indexs[:-1])])
+        data.append(sentence[split_indexs[-1]+1:])
+        data = [ws for ws in data if any(w for w in ws if w[1] != 'O')]
+        for t in data:
+            _index = random.choice(range(len(t)))
+            if t[_index][1] == 'O':
+                t = copy.deepcopy(t)
+                del t[_index]
+                augment_datas.append(t)
+        augment_datas.extend(data)
     return sentences + augment_datas
 
 def load_sentences(path, lower, zeros, data_augment=True):
