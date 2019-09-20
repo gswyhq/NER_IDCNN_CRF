@@ -17,7 +17,7 @@ def data_augmentation(sentences):
     for sentence in sentences:
         if len(sentence) < 10:
             continue
-        split_indexs = [_index for _index, ws in enumerate(sentence[:-1]) if ws[0] in SPLIT_CHARS]
+        split_indexs = [_index for _index, ws in enumerate(sentence[:-1]) if ws[0] in SPLIT_CHARS and ws[1] == 'O']
         if not split_indexs:
             continue
         augment_datas.append(sentence[:split_indexs[0]+1])
