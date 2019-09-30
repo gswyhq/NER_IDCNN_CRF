@@ -11,7 +11,7 @@ jieba.initialize()
 
 def create_dico(item_list):
     """
-    Create a dictionary of items from a list of list of items.
+    创建一个字典，统计对应的词频
     """
     assert type(item_list) is list
     dico = {}
@@ -26,8 +26,7 @@ def create_dico(item_list):
 
 def create_mapping(dico):
     """
-    Create a mapping (item to ID / ID to item) from a dictionary.
-    Items are ordered by decreasing frequency.
+    词及其词ID映射字典；
     """
     sorted_items = sorted(dico.items(), key=lambda x: (-x[1], x[0]))
     id_to_item = {i: v[0] for i, v in enumerate(sorted_items)}
@@ -37,7 +36,7 @@ def create_mapping(dico):
 
 def zero_digits(s):
     """
-    Replace every digit in a string by a zero.
+    数字字符替换成0
     """
     return re.sub('\d', '0', s)
 

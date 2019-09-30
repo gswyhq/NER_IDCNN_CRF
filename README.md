@@ -29,6 +29,32 @@ Original paper [Fast and Accurate Entity Recognition with Iterated Dilated Convo
 
 ## 用法
 
+### 训练数据
+```dockerfile
+v1: 
+gswyhq@gswyhq-PC:~/NER_IDCNN_CRF$ python3 data/generator_ner_data.py   
+gswyhq@gswyhq-PC:~/NER_IDCNN_CRF/data$ mv train.txt train.txt.original 
+gswyhq@gswyhq-PC:~/NER_IDCNN_CRF/data$ tail -n +9451900 train.txt.original > test.txt 
+gswyhq@gswyhq-PC:~/NER_IDCNN_CRF/data$ head -n 9451899 train.txt.original > train.txt
+
+v2:
+gswyhq@gswyhq-PC:~/NER_IDCNN_CRF$ python3 data/data_format_transform.py  
+gswyhq@gswyhq-PC:~/NER_IDCNN_CRF$ python3 data/generator_ner_data2.py   
+gswyhq@gpu2-131:~/simnet/NER_IDCNN_CRF/data$ cat train4.txt train5.txt > train3.txt 
+gswyhq@gpu2-131:~/simnet/NER_IDCNN_CRF/data$ cat dev4.txt dev5.txt > dev3.txt 
+gswyhq@gpu2-131:~/simnet/NER_IDCNN_CRF/data$ cat test4.txt test5.txt > test3.txt 
+
+数据格式如:
+贾/B-JIBING 第/I-JIBING 虫/I-JIBING 病/I-JIBING 诊/O 断/O 检/O 查/O 项/O 目/O 是/O 什/O 么/O
+治/O 疗/O 费/O 用/O 要/O 多/O 少/O 钱/O
+妊/B-JIBING 娠/I-JIBING 性/I-JIBING 哮/I-JIBING 喘/I-JIBING 药/O 品/O 详/O 情/O 是/O 什/O 么/O
+福/B-JIBING 尔/I-JIBING 马/I-JIBING 林/I-JIBING 中/I-JIBING 毒/I-JIBING 的/O 诊/O 断/O 检/O 查/O 项/O 目/O 是/O
+吉/B-RENWU 川/I-RENWU 友/I-RENWU 兼/I-RENWU 哪/O 国/O 人/O
+松/B-JIBING 毛/I-JIBING 虫/I-JIBING 皮/I-JIBING 炎/I-JIBING 分/O 类/O 是/O 什/O 么/O
+什/O 么/O 膳/O 食/O 适/O 合/O 脑/B-JIBING 震/I-JIBING 荡/I-JIBING
+
+```
+
 
 ### * 训练:
 
@@ -43,7 +69,7 @@ Original paper [Fast and Accurate Entity Recognition with Iterated Dilated Convo
 
 2. 训练，在验证数据上获得最佳F1分数的模型将保存在 ckpt/ 目录下
 
-要使用IDCNN + CRF（默认）进行训练，请运行：:
+要使用IDCNN + CRF（默认）进行训练，请运行:
 
 `python3 main.py --train=True --clean=True --model_type=idcnn`
 
@@ -119,4 +145,9 @@ gswyhq@gswyhq-PC:~/NER_IDCNN_CRF$ docker-compose -f docker-compose.yml up -d
 测试
 time curl "http://localhost:18000/parser" -d '{"question": "姚明有多高"}'
 
+bilstm_20190929_2136: 增加了疾病、药物识别  
+bilstm_20190922_2136: 添加了数据增强  
+bilstm_20190916_2136: 基础版本  
+
 [致谢](https://github.com/crownpku/Information-Extraction-Chinese)
+

@@ -169,13 +169,15 @@ def train():
 
     # limit GPU memory
     tf_config = tf.ConfigProto()
-    tf_config.gpu_options.allow_growth = True
+    tf_config.gpu_options.allow_growth = True  # 允许显存增长。如果设置为 True，分配器不会预先分配一定量 GPU 显存，而是先分配一小块，必要时增加显存分配
     steps_per_epoch = train_manager.len_data
+
     with tf.Session(config=tf_config) as sess:
         model = create_model(sess, Model, FLAGS.ckpt_path, load_word2vec, config, id_to_char, logger)
         logger.info("start training")
         loss = []
-        for i in range(100):
+        for i in range(5):
+            print('迭代次数: {}'.format(i))
             for batch in train_manager.iter_batch(shuffle=True):
                 step, batch_loss = model.run_step(sess, True, batch)
                 loss.append(batch_loss)
@@ -202,7 +204,13 @@ def evaluate_line():
         char_to_id, id_to_char, tag_to_id, id_to_tag = pickle.load(f)
     with tf.Session(config=tf_config) as sess:
         model = create_model(sess, Model, FLAGS.ckpt_path, load_word2vec, config, id_to_char, logger, False)
-        for line in ['珠穆朗玛峰有多高', '百度公司的董事长是谁', '百度总部地址', '太平洋有多大']:
+        for line in ['姚明身高是多少', '太平洋面积有多大？', '《天龙八部》的主演？', '联想集团的总部在哪里？', '林心如的老公是谁？',
+                     '珠穆朗玛峰有多高', '百度公司的董事长是谁', '百度总部地址', '太平洋有多大', '天龙八部是谁主演的', '太平洋的面积是多少',
+                     '百度总部在哪', '珠穆朗玛峰有多高', '百度公司的董事长是谁', '太平洋有多大', '如何治疗感冒', '乳腺癌的症状有哪些？',
+                     '最近老流鼻涕怎么办？', '为什么有的人会失眠？', '失眠有哪些并发症？', '失眠的人不要吃啥？', '耳鸣了吃点啥？',
+                     '哪些人最好不好吃蜂蜜？', '鹅肉有什么好处？', '肝病要吃啥药？', '板蓝根颗粒能治啥病？', '脑膜炎怎么才能查出来？',
+                     '怎样才能预防肾虚？', '感冒要多久才能好？', '高血压要怎么治？', '白血病能治好吗？', '什么人容易得高血压？',
+                     '糖尿病', '全血细胞计数能查出啥来', '什么样的人容易失眠', '什么样的人容易感冒']:
             result = model.evaluate_line(sess, input_from_line(line, char_to_id), id_to_tag)
             print(result)
         while True:

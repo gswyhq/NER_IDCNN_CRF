@@ -40,33 +40,20 @@ def data_augmentation(sentences):
 
 def load_sentences(path, lower, zeros, data_augment=True):
     """
-    Load sentences. A line must contain at least a word and its tag.
-    Sentences are separated by empty lines.
+    读取训练数据
+    数据文件格式如下：
+    如/O 何/O 演/O 好/O 自/O 己/O 的/O 角/O 色/O ，/O 请/O 读/O 《/O 演/O 员/O 自/O 我/O 修/O 养/O 》/O
+    :param path: 数据文件
+    :param lower:
+    :param zeros:
+    :param data_augment: 是否需要数据增强；
+    :return:
     """
     sentences = []
-    sentence = []
-    num = 0
     for line in codecs.open(path, 'r', 'utf8'):
-        num+=1
         line = zero_digits(line.rstrip()) if zeros else line.rstrip()
-        # print(list(line))
-        if not line:
-            if len(sentence) > 0:
-                if 'DOCSTART' not in sentence[0][0]:
-                    sentences.append(sentence)
-                sentence = []
-        else:
-            if line[0] == " ":
-                line = "$" + line[1:]
-                word = line.split()
-                # word[0] = " "
-            else:
-                word= line.split()
-            if len(word) < 2: continue
-            assert len(word) >= 2, print([word[0]])
-            sentence.append(word)
-    if len(sentence) > 0:
-        if 'DOCSTART' not in sentence[0][0]:
+        sentence = [[word[0], word[2:]] for word in line.split() if word[1] == '/']
+        if sentence:
             sentences.append(sentence)
     if data_augment:
         sentences = data_augmentation(sentences)
@@ -99,13 +86,13 @@ def update_tag_scheme(sentences, tag_scheme):
 
 def char_mapping(sentences, lower):
     """
-    Create a dictionary and a mapping of words, sorted by frequency.
+    创建字典和单词映射，按频率排序。
     """
     chars = [[x[0].lower() if lower else x[0] for x in s] for s in sentences]
-    dico = create_dico(chars)
+    dico = create_dico(chars)  # 词频统计；
     dico["<PAD>"] = 10000001
     dico['<UNK>'] = 10000000
-    char_to_id, id_to_char = create_mapping(dico)
+    char_to_id, id_to_char = create_mapping(dico)  # 词及其词id
     print("Found %i unique words (%i in total)" % (
         len(dico), sum(len(x) for x in chars)
     ))
@@ -152,10 +139,10 @@ def prepare_dataset(sentences, char_to_id, tag_to_id, lower=False, train=True):
 
 def augment_with_pretrained(dictionary, ext_emb_path, chars):
     """
-    Augment the dictionary with words that have a pretrained embedding.
-    If `words` is None, we add every word that has a pretrained embedding
-    to the dictionary, otherwise, we only add the words that are given by
-    `words` (typically the words in the development and test sets.)
+    用预先训练好的嵌入词增强词典的功能。
+     如果`words'为None，我们添加每个具有预训练嵌入的单词
+     到字典中，否则，我们只添加由
+     单词（通常是开发和测试集中的单词）。
     """
     print('Loading pretrained embeddings from %s...' % ext_emb_path)
     assert os.path.isfile(ext_emb_path)
